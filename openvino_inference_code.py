@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from openvino.runtime import Core, Tensor
 import supervision as sv
+import time
 
 # Paths to model files (OpenVINO IR format)
 model_xml = '/home/cognitica-i7-13thgen/NPS/OpenVino_model/py_person_0.2/model1.xml'  # Adjust to your model path
@@ -44,7 +45,7 @@ while True:
     ret, frame = cap.read()
     if not ret:
         break
-
+    start_time = time.time()
     # Preprocess frame (Resize, Normalize, Convert to CHW)
     image_resized = cv2.resize(frame, input_size)
     image = image_resized.astype(np.float32) / 255.0  # Normalize to [0, 1]
@@ -105,7 +106,10 @@ while True:
 
             # Annotate the frame with bounding boxes
             frame = box_annotator.annotate(scene=frame, detections=detections, labels=[label])
-
+    end_time = time.time()
+    fps = 1 / (end_time - start_time)
+    cv2.putText(frame, f'FPS: {fps:.2f}', (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     # Show the frame with detections
     cv2.imshow('Video Inference', frame)
 
